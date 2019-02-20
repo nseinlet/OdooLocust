@@ -32,14 +32,14 @@
 from distutils.core import setup
 
 setup(name='OdooLocust',
-      version='1.0.0',
+      version='1.0.1',
       description='Easily load test Odoo using Locust and openerplib.',
       author='Nicolas Seinlet',
       author_email='',
       url='',
       packages=["OdooLocust"],
       install_requires=[
-          'openerp-client-lib',
+          'odoo-client-lib',
           'locustio',
       ],
       long_description="See the home page for any information: https://github.com/nseinlet/OdooLocust .",
