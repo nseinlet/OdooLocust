@@ -32,17 +32,18 @@ import odoolib
 import time
 import sys
 
-from locust import Locust, events, task, TaskSet
-        
+from locust import Locust, events
+
+
 def send(self, service_name, method, *args):
-    if service_name=="object" and method=="execute_kw":
+    if service_name == "object" and method == "execute_kw":
         call_name = "%s : %s" % args[3:5]
     else:
         call_name = '%s : %s' % (service_name, method)
     start_time = time.time()
     try:
         res = odoolib.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
-    except Exception, e:
+    except Exception as e:
         total_time = int((time.time() - start_time) * 1000)
         events.request_failure.fire(request_type="Odoo JsonRPC", name=call_name, response_time=total_time, exception=e)
         raise e
@@ -50,9 +51,11 @@ def send(self, service_name, method, *args):
         total_time = int((time.time() - start_time) * 1000)
         events.request_success.fire(request_type="Odoo JsonRPC", name=call_name, response_time=total_time, response_length=sys.getsizeof(res))
     return res
-    
+
+
 odoolib.JsonRPCConnector.send = send
 odoolib.JsonRPCSConnector.send = send
+
 
 class OdooLocust(Locust):
     port = 8069
@@ -61,20 +64,20 @@ class OdooLocust(Locust):
     password = "admin"
     protocol = "jsonrpc"
     user_id = -1
-    
-    def __init__(self, *args, **kwargs):
-        super(OdooLocust, self).__init__(*args, **kwargs)
+
+    def __init__(self):
+        super(OdooLocust, self).__init__()
         self._connect()
-        
+
     def _connect(self):
         user_id = None
-        if self.user_id and self.user_id>0:
+        if self.user_id and self.user_id > 0:
             user_id = self.user_id
         self.client = odoolib.get_connection(hostname=self.host,
-                                               port=self.port,
-                                               database=self.database,
-                                               login=self.login,
-                                               password=self.password,
-                                               protocol=self.protocol,
-                                               user_id=user_id)
+                                             port=self.port,
+                                             database=self.database,
+                                             login=self.login,
+                                             password=self.password,
+                                             protocol=self.protocol,
+                                             user_id=user_id)
         self.client.check_login(force=False)

@@ -1,2 +1,3 @@
-openerp-client-lib==1.1.2
+odoo-client-lib==1.1.2
 locustio
+locust

@@ -32,8 +32,8 @@
 from distutils.core import setup
 
 setup(name='OdooLocust',
-      version='1.0.1',
-      description='Easily load test Odoo using Locust and openerplib.',
+      version='1.0.3',
+      description='Easily load test Odoo using Locust and odoolib.',
       author='Nicolas Seinlet',
       author_email='',
       url='',
@@ -41,9 +41,10 @@ setup(name='OdooLocust',
       install_requires=[
           'odoo-client-lib',
           'locustio',
+          'locust',
       ],
-      long_description="See the home page for any information: https://github.com/nseinlet/OdooLocust .",
-      keywords="odoo locust openerplib loadtest",
+      long_description="See the home page for any information: https://github.com/odoo/OdooLocust.",
+      keywords="odoo locust odoolib loadtest",
       license="BSD",
       classifiers=[
           "License :: OSI Approved :: BSD License",
