@@ -70,3 +70,28 @@ and you finally run your locust tests the usual way:
 ```
 locust -f my_file.py Seller
 ```
+# Generic test
+
+This version is shipped with a generic TaskSet task, OdooTaskSet, and a TaskSet which randomly click on menu items, 
+OdooGenericTaskSet.  To use this version, create this simple test file:
+
+```
+from OdooLocust import OdooLocust
+from OdooLocust import OdooTaskSet
+
+
+class Generic(OdooLocust.OdooLocust):
+    host = "127.0.0.1"
+    database = "testdb"
+    min_wait = 100
+    max_wait = 1000
+    weight = 3
+    
+    task_set = OdooTaskSet.OdooGenericTaskSet
+```
+
+and you finally run your locust tests the usual way:
+
+```
+locust -f my_file.py Generic
+```

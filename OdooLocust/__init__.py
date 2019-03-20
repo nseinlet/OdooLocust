@@ -30,4 +30,5 @@
 # 
 ##############################################################################
 
-from OdooLocust import *
+from . import OdooLocust
+from . import OdooTaskSet
