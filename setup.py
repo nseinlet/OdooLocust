@@ -39,7 +39,7 @@ setup(name='OdooLocust',
       url='',
       packages=["OdooLocust"],
       install_requires=[
-          'openerp-client-lib',
+          'odoo-client-lib',
           'locustio',
       ],
       long_description="See the home page for any information: https://github.com/nseinlet/OdooLocust .",

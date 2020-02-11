@@ -28,7 +28,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
 ##############################################################################
-import openerplib
+import odoolib
 import time
 import sys
 
@@ -41,7 +41,7 @@ def send(self, service_name, method, *args):
         call_name = '%s : %s' % (service_name, method)
     start_time = time.time()
     try:
-        res = openerplib.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
+        res = odoolib.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
     except Exception as e:
         total_time = int((time.time() - start_time) * 1000)
         events.request_failure.fire(request_type="Odoo JsonRPC", name=call_name, response_time=total_time, exception=e)
@@ -51,8 +51,8 @@ def send(self, service_name, method, *args):
         events.request_success.fire(request_type="Odoo JsonRPC", name=call_name, response_time=total_time, response_length=sys.getsizeof(res))
     return res
     
-openerplib.JsonRPCConnector.send = send
-openerplib.JsonRPCSConnector.send = send
+odoolib.JsonRPCConnector.send = send
+odoolib.JsonRPCSConnector.send = send
 
 class OdooLocust(Locust):
     port = 8069
@@ -70,7 +70,7 @@ class OdooLocust(Locust):
         user_id = None
         if self.user_id and self.user_id>0:
             user_id = self.user_id
-        self.client = openerplib.get_connection(hostname=self.host,
+        self.client = odoolib.get_connection(hostname=self.host,
                                                port=self.port,
                                                database=self.database,
                                                login=self.login,
