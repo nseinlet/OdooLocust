@@ -29,7 +29,7 @@
 #
 ##############################################################################
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='OdooLocust',
       version='1.3.0',
