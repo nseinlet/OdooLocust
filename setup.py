@@ -40,7 +40,7 @@ setup(name='OdooLocust',
       packages=["OdooLocust"],
       install_requires=[
           'odoo-client-lib',
-          'locustio',
+          'locustio==0.14.6',
           'locust',
       ],
       long_description="See the home page for any information: https://github.com/odoo/OdooLocust.",
