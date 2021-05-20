@@ -32,7 +32,7 @@ import odoolib
 import time
 import sys
 
-from locust import User, events
+from locust import HttpUser, events
 
 
 def send(self, service_name, method, *args):
@@ -57,7 +57,7 @@ odoolib.JsonRPCConnector.send = send
 odoolib.JsonRPCSConnector.send = send
 
 
-class OdooLocust(User):
+class OdooLocustUser(HttpUser):
     port = 8069
     database = "demo"
     login = "admin"
@@ -65,11 +65,7 @@ class OdooLocust(User):
     protocol = "jsonrpc"
     user_id = -1
 
-    def __init__(self, *args, **kwargs):
-        super(OdooLocust, self).__init__(*args, **kwargs)
-        self._connect()
-
-    def _connect(self):
+    def on_start(self):
         user_id = None
         if self.user_id and self.user_id > 0:
             user_id = self.user_id

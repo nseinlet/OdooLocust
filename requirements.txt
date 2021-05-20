@@ -1,2 +1,2 @@
 odoo-client-lib==1.2.2
-locust==1.4.3
+locust==1.5.3

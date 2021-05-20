@@ -1,7 +1,15 @@
-from locust import task, TaskSet
+from locust import task, between
+from OdooLocust.OdooLocustUser import OdooLocustUser
 
 
-class SellerTaskSet(TaskSet):
+class Seller(OdooLocustUser):
+    wait_time = between(0.1, 10)
+    database = "test_db"
+    login = "admin"
+    password = "secret_password"
+    port = 443
+    protocol = "jsonrpcs"
+    
     @task(10)
     def read_partners(self):
         cust_model = self.client.get_model('res.partner')
