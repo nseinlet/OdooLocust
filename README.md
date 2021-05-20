@@ -63,7 +63,7 @@ https://docs.locust.io/en/stable/configuration.html#configuration-file
 ```
 host=localhost
 users = 100
-spawn-rate = 10.py
+spawn-rate = 10
 ```
 
 then you run your locust tests the usual way:
