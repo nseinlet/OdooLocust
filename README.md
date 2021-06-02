@@ -12,7 +12,7 @@ An Odoo load testing solution, using openerplib and Locust
 
 To load test Odoo, you create tasks sets like you'll have done it with Locust:
 
-```
+```python
 from locust import task, TaskSet
 
 class SellerTaskSet(TaskSet):
@@ -51,7 +51,7 @@ class SellerTaskSet(TaskSet):
 
 then you create a profile, based on your taskset, which use OdooLocust instead of Locust:
 
-```
+```python
 from OdooLocust import OdooLocust
 from SellerTaskSet import SellerTaskSet
 
@@ -67,6 +67,6 @@ class Seller(OdooLocust):
 
 and you finally run your locust tests the usual way:
 
-```
+```bash
 locust -f my_file.py Seller
 ```
