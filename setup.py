@@ -32,7 +32,7 @@
 from setuptools import setup
 
 setup(name='OdooLocust',
-      version='1.5.0',
+      version='1.5.1',
       description='Easily load test Odoo using Locust and odoolib.',
       author='Nicolas Seinlet',
       author_email='',

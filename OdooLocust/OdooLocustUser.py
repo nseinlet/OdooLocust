@@ -58,6 +58,7 @@ odoolib.JsonRPCSConnector.send = send
 
 
 class OdooLocustUser(HttpUser):
+    abstract = True
     port = 8069
     database = "demo"
     login = "admin"
