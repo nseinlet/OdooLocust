@@ -32,7 +32,7 @@
 from setuptools import setup
 
 setup(name='OdooLocust',
-      version='1.5.1',
+      version='1.6.0',
       description='Easily load test Odoo using Locust and odoolib.',
       author='Nicolas Seinlet',
       author_email='',
@@ -40,7 +40,9 @@ setup(name='OdooLocust',
       packages=["OdooLocust"],
       install_requires=[
           'odoo-client-lib>=1.2.2',
-          'locust>=1.4.3',
+          'locust>=2.13.0',
+          'greenlet>=1.1.3',
+          'flask>=2.1.3',
       ],
       long_description="See the home page for any information: https://github.com/odoo/OdooLocust.",
       keywords="odoo locust odoolib loadtest",
