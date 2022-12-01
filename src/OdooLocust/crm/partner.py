@@ -1,11 +1,7 @@
-
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-# Copyright (C) Stephane Wirtel
-# Copyright (C) 2011 Nicolas Vanhoren
-# Copyright (C) 2011 OpenERP s.a. (<http://openerp.com>).
-# Copyright (C) 2017 Nicolas Seinlet
+# Copyright (C) 2022 Nicolas Seinlet
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,5 +26,16 @@
 #
 ##############################################################################
 
-from . import OdooLocustUser
-from . import OdooTaskSet
+from ..generic.OdooTaskSet import OdooTaskSet
+from locust import task
+
+import names
+
+
+class ResPartner(OdooTaskSet):
+
+    @task(10)
+    def test_search(self):
+        partner_model = self.client.get_model('res.partner')
+        partner_model.search([('name', 'ilike', names.get_first_name())], context=self.client.get_user_context())
+

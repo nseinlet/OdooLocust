@@ -105,3 +105,45 @@ and you finally run your locust tests the usual way:
 ```
 locust -f my_file.py
 ```
+
+# CRM test
+
+This version is shipped with some CRM tests.
+
+```
+# -*- coding: utf-8 -*-
+from OdooLocust import OdooLocustUser, crm
+
+class OdooCom(OdooLocustUser.OdooLocustUser):
+    host = "erp.mycompany.com"
+    database = "my_db"
+    login = "admin"
+    password = "secure_password"
+    port = 443
+    protocol = "jsonrpcs"
+
+    tasks = {crm.partner.ResPartner: 1, crm.lead.CrmLead: 2, crm.quotation.SaleOrder: 1}
+```
+
+# Test with workers
+
+As Locust use greenlet, you're using one core of your computer. If this is a limiting factor, it's possible to use multiple workers. It's 
+also possible to run a headless test, to automate it. This sh file run a headless test, without asking host, users, ... using an Odoo load 
+test file called load_odoo.py:
+
+```
+#!/bin/bash
+if [ -z "$3" ]
+  then
+      echo "No argument supplied"
+      echo "start_workers.sh nbr_workers concurrency time"
+      exit 1
+fi
+x=1
+while [ $x -le $1 ]
+do
+  locust -f load_odoo.py --worker --only-summary > /dev/null 2>&1 &
+  x=$(( $x + 1 ))
+done
+locust -f load_odoo.py --headless --users $2 --spawn-rate $2 --run-time $3m --master --expect-workers=$1
+```

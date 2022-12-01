@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
@@ -29,28 +30,5 @@
 #
 ##############################################################################
 
-from setuptools import setup, find_packages
-
-setup(name='OdooLocust',
-      version='1.6.1',
-      description='Easily load test Odoo using Locust and odoolib.',
-      author='Nicolas Seinlet',
-      author_email='',
-      url='',
-      packages=find_packages("src"),
-      package_dir={'': 'src'},
-      install_requires=[
-          'odoo-client-lib>=1.2.2',
-          'locust>=2.13.0',
-          'greenlet>=1.1.3',
-          'flask>=2.1.3',
-          'names>=0.3.0',
-      ],
-      long_description="See the home page for any information: https://github.com/odoo/OdooLocust.",
-      keywords="odoo locust odoolib loadtest",
-      license="BSD",
-      classifiers=[
-          "License :: OSI Approved :: BSD License",
-          "Programming Language :: Python",
-          ],
-     )
+from . import OdooLocustUser, OdooTaskSet
+from . import crm
