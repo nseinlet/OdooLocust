@@ -26,7 +26,7 @@
 #
 ##############################################################################
 
-from ..generic.OdooTaskSet import OdooTaskSet
+from ..OdooTaskSet import OdooTaskSet
 from locust import task
 
 import names
