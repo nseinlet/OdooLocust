@@ -45,11 +45,11 @@ def send(self, service_name, method, *args):
         res = odoolib.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
     except Exception as e:
         total_time = int((time.time() - start_time) * 1000)
-        events.request_failure.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=0, exception=e)
+        events.request.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=0, exception=e)
         raise e
     else:
         total_time = int((time.time() - start_time) * 1000)
-        events.request_success.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=sys.getsizeof(res))
+        events.request.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=sys.getsizeof(res))
         return res
 
 

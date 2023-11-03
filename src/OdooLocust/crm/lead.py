@@ -35,9 +35,14 @@ import names
 import random
 
 class CrmLead(OdooTaskSet):
-    list_fields = ["stage_id", "active", "company_id", "calendar_event_count", "registration_ids", "registration_count", "quotation_count", "allow_send_scaleup", "company_id", "user_company_ids", "date_deadline", "create_date", "name", "contact_name", "partner_name", "email_from", "phone", "city", "state_id", "country_id", "partner_id", "partner_assigned_id", "user_id", "team_id", "active", "campaign_id", "referred", "medium_id", "probability", "source_id", "message_needaction", "tag_ids", "priority"]
-    form_fields = ["allow_send_scaleup", "stage_id", "active", "company_id", "calendar_event_count", "registration_ids", "registration_count", "quotation_count", "sale_amount_total", "sale_order_count", "visitor_page_count", "visitor_sessions_count", "duplicate_lead_count", "name", "company_currency", "expected_revenue", "recurring_revenue", "recurring_plan", "automated_probability", "is_automated_probability", "probability", "is_partner_visible", "partner_id", "partner_name", "street", "street2", "city", "state_id", "zip", "country_id", "website", "lang_active_count", "lang_code", "lang_id", "is_blacklisted", "partner_is_blacklisted", "phone_blacklisted", "mobile_blacklisted", "email_state", "phone_state", "partner_email_update", "partner_phone_update", "email_from", "phone", "lost_reason_id", "date_conversion", "user_company_ids", "contact_name", "title", "function", "mobile", "type", "user_id", "date_deadline", "priority", "tag_ids", "team_id", "lead_properties", "description", "campaign_id", "medium_id", "source_id", "referred", "date_open", "date_closed", "day_open", "day_close", "partner_latitude", "partner_longitude", "partner_assigned_id", "display_name"]
-    random_id = 11393513
+    list_fields = ["stage_id", "active", "company_id", "calendar_event_count", "company_id", "user_company_ids", "date_deadline", "create_date", "name", "contact_name", "partner_name", "email_from", "phone", "city", "state_id", "country_id", "partner_id", "user_id", "team_id", "active", "campaign_id", "referred", "medium_id", "probability", "source_id", "message_needaction", "tag_ids", "priority"]
+    form_fields = ["stage_id", "active", "company_id", "calendar_event_count", "sale_amount_total", "sale_order_count", "visitor_page_count", "duplicate_lead_count", "name", "company_currency", "expected_revenue", "recurring_revenue", "recurring_plan", "automated_probability", "is_automated_probability", "probability", "is_partner_visible", "partner_id", "partner_name", "street", "street2", "city", "state_id", "zip", "country_id", "website", "lang_active_count", "lang_code", "lang_id", "is_blacklisted", "partner_is_blacklisted", "phone_blacklisted", "mobile_blacklisted", "email_state", "phone_state", "partner_email_update", "partner_phone_update", "email_from", "phone", "lost_reason_id", "date_conversion", "user_company_ids", "contact_name", "title", "function", "mobile", "type", "user_id", "date_deadline", "priority", "tag_ids", "team_id", "lead_properties", "description", "campaign_id", "medium_id", "source_id", "referred", "date_open", "date_closed", "day_open", "day_close", "display_name"]
+    random_id = -1
+
+    def on_start(self):
+        super().on_start()
+        self.test_searchread()
+
 
     def _get_search_domain(self):
         name = names.get_first_name()
@@ -84,6 +89,8 @@ class CrmLead(OdooTaskSet):
 
     @task(5)
     def test_activity(self):
+        model_model = self.client.get_model('ir.model')
+        crm_lead_model_id = model_model.search([('model', '=', 'crm.lead')], limit=1, context=self.client.get_user_context())
         activity_model = self.client.get_model('mail.activity')
         res = activity_model.create({
             "activity_type_id": 4,
@@ -91,20 +98,11 @@ class CrmLead(OdooTaskSet):
             "date_deadline": (date(2012, 1 ,1)+timedelta(days=random.randint(1,3650))).isoformat(),
             "note": False,
             "res_id": self.random_id,
-            "res_model_id": 276,
+            "res_model_id": crm_lead_model_id[0],
             "summary": "Todo",
-            "user_id": 294103,
+            "user_id": self.client.user_id,
         }, context=self.client.get_user_context())
         activity_model.action_feedback(res, 'Done')
-
-    # @task(5)
-    # def test_activity_list(self):
-    #     activity_model = self.client.get_model('mail.activity')
-    #     activity_model.search_read(
-    #         ["&", ["activity_ids", "!=", False], "&", ["activity_user_id", "=", 294103], "|", [ "my_activity_date_deadline", "<", "2022-11-30"], [ "my_activity_date_deadline", "=", "2022-11-30"]],
-    #         ["activity_exception_decoration", "activity_exception_icon", "activity_state", "activity_summary", "activity_type_icon", "activity_type_id", "company_id", "user_company_ids", "date_deadline", "create_date", "name", "partner_id", "contact_name", "email_from", "phone", "city", "state_id", "country_id", "user_id", "team_id", "priority", "partner_assigned_id", "date_partner_assign", "activity_ids", "activity_user_id", "my_activity_date_deadline", "activity_calendar_event_id", "campaign_id", "medium_id", "source_id", "company_currency", "expected_revenue", "recurring_revenue_monthly", "recurring_revenue", "recurring_plan", "stage_id", "active", "probability", "tag_ids", "referred", "message_needaction"],
-    #         limit=80,
-    #     )
 
     @task
     def test_pipeline_analysis(self):
