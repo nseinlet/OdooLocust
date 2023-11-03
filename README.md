@@ -12,7 +12,7 @@ An Odoo load testing solution, using odoolib and Locust. Locust API changed a bi
 
 To load test Odoo, you create tests like you'll have done it with Locust:
 
-```
+```python
 from locust import task, between
 from OdooLocust.OdooLocustUser import OdooLocustUser
 
@@ -68,7 +68,7 @@ spawn-rate = 10
 
 then you run your locust tests the usual way:
 
-```
+```bash
 locust -f my_file.py
 ```
 
@@ -77,7 +77,7 @@ locust -f my_file.py
 This version is shipped with a generic TaskSet task, OdooTaskSet, and a TaskSet which randomly click on menu items,
 OdooGenericTaskSet.  To use this version, create this simple test file:
 
-```
+```python
 from OdooLocust.OdooLocustUser import OdooLocustUser
 from locust import task, between
 from OdooLocust import OdooTaskSet
@@ -102,7 +102,7 @@ class GenericTest(OdooLocustUser):
 
 and you finally run your locust tests the usual way:
 
-```
+```bash
 locust -f my_file.py
 ```
 
@@ -110,7 +110,7 @@ locust -f my_file.py
 
 This version is shipped with some CRM tests.
 
-```
+```python
 # -*- coding: utf-8 -*-
 from OdooLocust import OdooLocustUser, crm
 
@@ -131,7 +131,7 @@ As Locust use greenlet, you're using one core of your computer. If this is a lim
 also possible to run a headless test, to automate it. This sh file run a headless test, without asking host, users, ... using an Odoo load 
 test file called load_odoo.py:
 
-```
+```bash
 #!/bin/bash
 if [ -z "$3" ]
   then
