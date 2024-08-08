@@ -38,6 +38,16 @@ class CrmLead(OdooTaskSet):
     list_fields = ["stage_id", "active", "company_id", "calendar_event_count", "company_id", "user_company_ids", "date_deadline", "create_date", "name", "contact_name", "partner_name", "email_from", "phone", "city", "state_id", "country_id", "partner_id", "user_id", "team_id", "active", "campaign_id", "referred", "medium_id", "probability", "source_id", "message_needaction", "tag_ids", "priority"]
     form_fields = ["stage_id", "active", "company_id", "calendar_event_count", "sale_amount_total", "sale_order_count", "visitor_page_count", "duplicate_lead_count", "name", "company_currency", "expected_revenue", "recurring_revenue", "recurring_plan", "automated_probability", "is_automated_probability", "probability", "is_partner_visible", "partner_id", "partner_name", "street", "street2", "city", "state_id", "zip", "country_id", "website", "lang_active_count", "lang_code", "lang_id", "is_blacklisted", "partner_is_blacklisted", "phone_blacklisted", "mobile_blacklisted", "email_state", "phone_state", "partner_email_update", "partner_phone_update", "email_from", "phone", "lost_reason_id", "date_conversion", "user_company_ids", "contact_name", "title", "function", "mobile", "type", "user_id", "date_deadline", "priority", "tag_ids", "team_id", "lead_properties", "description", "campaign_id", "medium_id", "source_id", "referred", "date_open", "date_closed", "day_open", "day_close", "display_name"]
     random_id = -1
+    _model_id = -1
+
+    @property
+    def model_id(self):
+        if self._model_id < 0:            
+            irm = self.client.get_model('ir.model.data')
+            irm_id = irm.search_read([('model', '=', 'crm'), ('name', '=', 'model_crm_lead')], ['res_id'])
+            if irm_id:
+                self._model_id = irm_id[0]['res_id']
+        return self._model_id
 
     def on_start(self):
         super().on_start()
@@ -57,7 +67,8 @@ class CrmLead(OdooTaskSet):
             limit=80,
             context=self.client.get_user_context()
         )
-        self.random_id = res[0]['id']
+        if res:
+            self.random_id = res[0]['id']
 
     @task(5)
     def test_websearchread(self):
@@ -68,7 +79,8 @@ class CrmLead(OdooTaskSet):
             limit=80,
             context=self.client.get_user_context()
         )
-        self.random_id = res[0]['id']
+        if res:
+            self.random_id = res[0]['id']
 
     @task(20)
     def test_read(self):
@@ -89,8 +101,6 @@ class CrmLead(OdooTaskSet):
 
     @task(5)
     def test_activity(self):
-        model_model = self.client.get_model('ir.model')
-        crm_lead_model_id = model_model.search([('model', '=', 'crm.lead')], limit=1, context=self.client.get_user_context())
         activity_model = self.client.get_model('mail.activity')
         res = activity_model.create({
             "activity_type_id": 4,
@@ -98,7 +108,7 @@ class CrmLead(OdooTaskSet):
             "date_deadline": (date(2012, 1 ,1)+timedelta(days=random.randint(1,3650))).isoformat(),
             "note": False,
             "res_id": self.random_id,
-            "res_model_id": crm_lead_model_id[0],
+            "res_model_id": self.model_id,
             "summary": "Todo",
             "user_id": self.client.user_id,
         }, context=self.client.get_user_context())

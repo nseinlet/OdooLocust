@@ -65,6 +65,10 @@ class OdooTaskSet(TaskSet):
             base_action = self.client.get_model('ir.actions.actions').read(action_id, ['type'])
             action_type = base_action[0]['type']
         return self.client.get_model(action_type).read(action_id, [])
+    
+    def _check_fields(self, model, fields_list):
+        all_fields = self.client.get_model(model).fields_get()
+        return [ f for f in fields_list if f in all_fields.keys() ]
 
 
 class OdooGenericTaskSet(OdooTaskSet):
