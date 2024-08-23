@@ -31,6 +31,13 @@ from locust import task, TaskSet
 
 
 class OdooTaskSet(TaskSet):
+    model_name = False
+    model = False
+    form_fields = []
+    list_fields = []
+    kanban_fields = []
+    filters = []
+
     def _get_user_context(self):
         res = self.client.get_model('res.users').read(self.client.user_id, ['lang', 'tz'])
         return {
@@ -40,25 +47,22 @@ class OdooTaskSet(TaskSet):
         }
 
     def _fields_view_get(self, model, view_mode):
-        res = self.client.get_model(model).load_views(views=[(False, vm) for vm in list(set(["list", "form", "search", view_mode]))])
+        res = self.client.get_model(model).get_views(views=[(False, vm) for vm in list(set(["list", "form", "search", view_mode]))])
         return [n for n in res.get('fields_views', {}).get(view_mode, {}).get('fields', {}).keys()]
 
     def _filters_view_get(self, model):
-        res = self.client.get_model(model).load_views(views=[(False, vm) for vm in list(set(["list", "form", "search"]))])
+        res = self.client.get_model(model).get_views(views=[(False, vm) for vm in list(set(["list", "form", "search"]))])
         return [n['domain'] for n in res.get('filters', {})]
 
-    def _parse_children_menu(self, childs):
-        res = []
-        for child in childs:
-            if child['action']:
-                res.append(child['action'].split(","))
-            if child['children']:
-                res += self._parse_children_menu(child['children'])
-        return res
-
     def _load_menu(self):
+        menus = []
         res = self.client.get_model('ir.ui.menu').load_menus(False, context=self._get_user_context())
-        return self._parse_children_menu(res['children'])
+        for menu_id in res.keys():
+            menu = res[menu_id].get('action')
+            if menu:
+                menus.append(menu.split(","))
+        print(menus)
+        return menus
 
     def _action_load(self, action_id, action_type=None):
         if not action_type:
@@ -69,26 +73,33 @@ class OdooTaskSet(TaskSet):
     def _check_fields(self, model, fields_list):
         all_fields = self.client.get_model(model).fields_get()
         return [ f for f in fields_list if f in all_fields.keys() ]
+    
+    def _load_fields_lists(self, form=True, list=True, kanban=False, filters=True):
+        if form:
+            self.form_fields = self._fields_view_get(self.model_name, "form")
+        if list:
+            self.list_fields = self._fields_view_get(self.model_name, "list")
+        if kanban:
+            self.kanban_fields = self._fields_view_get(self.model_name, "kanban")
+        if filters:
+            self.filters = self._filters_view_get(self.model_name)
 
 
 class OdooGenericTaskSet(OdooTaskSet):
-
     def on_start(self):
         self.menu = self._load_menu()
         self.randomlyChooseMenu()
 
     @task(1)
     def randomlyChooseMenu(self):
+        self.model_name = False
         self.model = False
-        while not self.model and self.model != "False":
+        while not self.model_name and self.model_name != "False":
             item = random.choice(self.menu)
             self.last_action = self._action_load(int(item[1]), item[0])
-            self.model = self.last_action.get('res_model', False)
-        self.form_fields = self._fields_view_get(self.model, "form")
-        self.list_fields = self._fields_view_get(self.model, "list")
-        if "kanban" in self.last_action.get('view_mode', []):
-            self.kanban_fields = self._fields_view_get(self.model, "kanban")
-        self.filters = self._filters_view_get(self.model)
+            self.model_name = self.last_action.get('res_model', False)
+        self.model = self.client.get_model(self.model_name)
+        self._load_fields_lists(kanban="kanban" in self.last_action.get('view_mode', []))
 
     @task(30)
     def form_view(self):
@@ -96,12 +107,11 @@ class OdooGenericTaskSet(OdooTaskSet):
         if self.filters and random.randint(0, 10) < 3:
             domain = random.choice(self.filters)
         context = self.client.get_user_context()
-        model = self.client.get_model(self.model)
-        nbr_records = model.search_count(domain or [], context=context)
+        nbr_records = self.model.search_count(domain or [], context=context)
         offset = random.randint(0, nbr_records % 80) if nbr_records > 80 else 0
-        ids = model.search(domain or [], limit=80, offset=offset, context=context)
+        ids = self.model.search(domain or [], limit=80, offset=offset, context=context)
         if ids:
-            model.read(random.choice(ids), self.form_fields, context=context)
+            self.model.read(random.choice(ids), self.form_fields, context=context)
 
     @task(10)
     def list_view(self):
@@ -109,14 +119,13 @@ class OdooGenericTaskSet(OdooTaskSet):
         if self.filters and random.randint(0, 10) < 3:
             domain = random.choice(self.filters)
         context = self.client.get_user_context()
-        model = self.client.get_model(self.model)
-        nbr_records = model.search_count(domain or [], context=context)
-        ids = model.search(domain or [], limit=80)
+        nbr_records = self.model.search_count(domain or [], context=context)
+        ids = self.model.search(domain or [], limit=80)
         if nbr_records > 80:
             offset = random.randint(0, nbr_records % 80)
-            ids = model.search(domain or [], limit=80, offset=offset, context=context)
+            ids = self.model.search(domain or [], limit=80, offset=offset, context=context)
         if ids:
-            model.search_read([('id', 'in', ids)], self.list_fields, context=context)
+            self.model.search_read([('id', 'in', ids)], self.list_fields, context=context)
 
     @task(10)
     def kanban_view(self):
@@ -125,11 +134,10 @@ class OdooGenericTaskSet(OdooTaskSet):
             if self.filters and random.randint(0, 10) < 3:
                 domain = random.choice(self.filters)
             context = self.client.get_user_context()
-            model = self.client.get_model(self.model)
-            nbr_records = model.search_count(domain or [], context=context)
-            ids = model.search(domain or [], limit=80)
+            nbr_records = self.model.search_count(domain or [], context=context)
+            ids = self.model.search(domain or [], limit=80)
             if nbr_records > 80:
                 offset = random.randint(0, nbr_records % 80)
-                ids = model.search(domain or [], limit=80, offset=offset, context=context)
+                ids = self.model.search(domain or [], limit=80, offset=offset, context=context)
             if ids:
-                model.search_read([('id', 'in', ids)], self.kanban_fields, context=context)
+                self.model.search_read([('id', 'in', ids)], self.kanban_fields, context=context)
