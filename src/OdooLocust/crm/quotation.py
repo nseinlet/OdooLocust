@@ -34,7 +34,6 @@ import random
 
 class SaleOrder(OdooTaskSet):
     line_fields = []
-    random_id = -1
     model_name = 'sale.order'
 
     def on_start(self):
@@ -47,8 +46,10 @@ class SaleOrder(OdooTaskSet):
     def _get_search_domain(self):
         if self.filters and random.randint(0, 10) < 3:
             return random.choice(self.filters)
-        name = names.get_first_name()
-        return ["|", "|", ["name", "ilike", name], ["client_order_ref", "ilike", name], ["partner_id", "child_of", name]]
+        if random.randint(0, 10) < 6:
+            name = names.get_first_name()
+            return ["|", "|", ["name", "ilike", name], ["client_order_ref", "ilike", name], ["partner_id", "child_of", name]]
+        return super()._get_search_domain()
 
     @task
     def test_list(self):
@@ -108,11 +109,13 @@ class SaleOrder(OdooTaskSet):
         prod_cnt = prod_model.search_count([('sale_ok', '=', True)])
 
         prtn_id = prtn_model.search([], offset=random.randint(0, prtn_cnt), limit=1)
-        prod_id = prod_model.search([('sale_ok', '=', True)], offset=random.randint(0, prod_cnt), limit=1)
+
+        so_lines = []
+        for i in range(0, random.randint(1, 10)):
+            prod_id = prod_model.search([('sale_ok', '=', True)], offset=random.randint(0, prod_cnt), limit=1)
+            so_lines.append((0, 0, {'product_id': prod_id[0], }))
 
         self.random_id = self.model.create({
             'partner_id': prtn_id[0],
-            'order_line': [(0, 0, {
-                'product_id': prod_id[0],
-            })]
+            'order_line': so_lines,
         })

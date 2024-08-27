@@ -34,8 +34,8 @@ from datetime import date, timedelta
 import names
 import random
 
+
 class CrmLead(OdooTaskSet):
-    random_id = -1
     model_name = 'crm.lead'
     model = False
 
@@ -48,8 +48,10 @@ class CrmLead(OdooTaskSet):
     def _get_search_domain(self):
         if self.filters and random.randint(0, 10) < 3:
             return random.choice(self.filters)
-        name = names.get_first_name()
-        return ['|', '|', '|', ('partner_name', 'ilike', name), ('email_from', 'ilike', name), ('contact_name', 'ilike', name), ('name', 'ilike', name)]
+        if random.randint(0, 10) < 6:
+            name = names.get_first_name()
+            return ['|', '|', '|', ('partner_name', 'ilike', name), ('email_from', 'ilike', name), ('contact_name', 'ilike', name), ('name', 'ilike', name)]
+        return super()._get_search_domain()
 
     @task(10)
     def test_searchread(self):

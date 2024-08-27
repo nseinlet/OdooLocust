@@ -26,16 +26,21 @@
 #
 ##############################################################################
 
-from ..OdooTaskSet import OdooTaskSet
-from locust import task
+import random
 
 import names
+from locust import task
+
+from ..OdooTaskSet import OdooGenericTaskSet
 
 
-class ResPartner(OdooTaskSet):
+class ResPartner(OdooGenericTaskSet):
+    model_name = 'res.partner'
 
-    @task(10)
-    def test_search(self):
-        partner_model = self.client.get_model('res.partner')
-        partner_model.search([('name', 'ilike', names.get_first_name())], context=self.client.get_user_context())
+    @task(2)
+    def random_partner_modification(self):
+        domain = [('user_ids', '=', False)]
+        prtn_cnt = self.model.search_count(domain)
 
+        self.random_id = self.model.search(domain, offset=random.randint(0, prtn_cnt), limit=1)
+        self.model.write(self.random_id, {'name': names.get_full_name()})
