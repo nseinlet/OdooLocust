@@ -145,25 +145,25 @@ class OdooGenericTaskSet(OdooTaskSet):
     def list_view(self):
         domain = self._get_search_domain()
         context = self.client.get_user_context()
+        ids = self.model.search(domain, limit=80, context=context)
         nbr_records = self.model.search_count(domain, context=context)
         if nbr_records > 80:
-            offset = random.randint(0, nbr_records % 80)
-            self.model.search(domain, limit=80)
-            ids = self.model.search(domain, limit=80, offset=offset, context=context)
             self.model.read(ids, self.list_fields, context=context)
+            offset = random.randint(0, nbr_records % 80)
+            ids = self.model.search(domain, limit=80, offset=offset, context=context)
         if ids:
-            self.model.search_read(domain, self.list_fields, context=context)
+            self.model.read(ids, self.list_fields, context=context)
 
     @task(10)
     def kanban_view(self):
         if self.kanban_fields:
             domain = self._get_search_domain()
             context = self.client.get_user_context()
+            ids = self.model.search(domain, limit=80, context=context)
             nbr_records = self.model.search_count(domain, context=context)
             if nbr_records > 80:
-                offset = random.randint(0, nbr_records % 80)
-                self.model.search(domain, limit=80, context=context)
-                ids = self.model.search(domain, limit=80, offset=offset, context=context)
                 self.model.read(ids, self.kanban_fields, context=context)
+                offset = random.randint(0, nbr_records % 80)
+                ids = self.model.search(domain, limit=80, offset=offset, context=context)
             if ids:
-                self.model.search_read(domain, self.kanban_fields, context=context)
+                self.model.read(ids, self.kanban_fields, context=context)
