@@ -74,14 +74,21 @@ locust -f my_file.py
 
 # Generic test
 
-This version is shipped with a generic TaskSet task, OdooTaskSet, and a TaskSet which randomly click on menu items,
-OdooGenericTaskSet.  To use this version, create this simple test file:
+This version is shipped with a generic TaskSet task, OdooTaskSet, and an
+OdooGenericTaskSet, designed to test form/list/kanban/search of a given model.
+To use this version, create this simple test file:
 
 ```python
 from OdooLocust.OdooLocustUser import OdooLocustUser
 from locust import task, between
 from OdooLocust import OdooTaskSet
 
+
+class Lead(OdooTaskSet.OdooGenericTaskSet):
+    model_name = 'crm.lead'
+
+class Partner(OdooTaskSet.OdooGenericTaskSet):
+    model_name = 'res.partner'
 
 class GenericTest(OdooLocustUser):
     wait_time = between(0.1, 1)
@@ -97,10 +104,14 @@ class GenericTest(OdooLocustUser):
         cust_ids = cust_model.search([], limit=80)
         prtns = cust_model.read(cust_ids, ['name'])
 
-    tasks = [OdooTaskSet.OdooGenericTaskSet]
+    tasks = {Lead: 1, Partner: 5}
 ```
 
-and you finally run your locust tests the usual way:
+This will create a task which will test the crm.lead form,list,kanban and search views,
+and one for res.partner.
+Of course you can add your own methods to this class, like a lead creation.
+
+And you finally run your locust tests the usual way:
 
 ```bash
 locust -f my_file.py
