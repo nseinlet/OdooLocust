@@ -127,7 +127,7 @@ class OdooGenericTaskSet(OdooTaskSet):
             context=self.client.get_user_context()
         )
         if res and res['records']:
-            self.random_id = res[0]['id']
+            self.random_id = random.choice(res['records'])['id']
 
     @task(30)
     def form_view(self):
