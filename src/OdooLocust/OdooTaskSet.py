@@ -55,7 +55,10 @@ class OdooTaskSet(TaskSet):
 
     def _fields_view_get(self, model, view_mode):
         res = self.client.get_model(model).get_views(views=[(False, vm) for vm in list(set(["list", "form", "search", view_mode]))])
-        return [n for n in res.get('fields_views', {}).get(view_mode, {}).get('fields', {}).keys()]
+        fields = [n for n in res.get('models', {}).get(model, {}).get('fields', {}).keys()]
+        if not fields:
+            fields = [n for n in res.get('fields_views', {}).get(view_mode, {}).get('fields', {}).keys()]
+        return fields
 
     def _filters_view_get(self, model):
         res = self.client.get_model(model).get_views(views=[(False, vm) for vm in list(set(["list", "form", "search"]))])
