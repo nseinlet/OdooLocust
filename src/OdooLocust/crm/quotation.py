@@ -108,11 +108,11 @@ class SaleOrder(OdooTaskSet):
         prtn_cnt = prtn_model.search_count([])
         prod_cnt = prod_model.search_count([('sale_ok', '=', True)])
 
-        prtn_id = prtn_model.search([], offset=random.randint(0, prtn_cnt), limit=1)
+        prtn_id = prtn_model.search([], offset=random.randint(0, prtn_cnt - 1), limit=1)
 
         so_lines = []
         for i in range(0, random.randint(1, 10)):
-            prod_id = prod_model.search([('sale_ok', '=', True)], offset=random.randint(0, prod_cnt), limit=1)
+            prod_id = prod_model.search([('sale_ok', '=', True)], offset=random.randint(0, prod_cnt - 1), limit=1)
             so_lines.append((0, 0, {'product_id': prod_id[0], }))
 
         self.random_id = self.model.create({
