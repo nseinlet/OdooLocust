@@ -42,5 +42,5 @@ class ResPartner(OdooGenericTaskSet):
         domain = [('user_ids', '=', False)]
         prtn_cnt = self.model.search_count(domain)
 
-        self.random_id = self.model.search(domain, offset=random.randint(0, prtn_cnt), limit=1)
+        self.random_id = self.model.search(domain, offset=random.randint(0, prtn_cnt - 1), limit=1)
         self.model.write(self.random_id, {'name': names.get_full_name()})
