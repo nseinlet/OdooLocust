@@ -10,14 +10,14 @@ on:
     branches: [ "package-build-nse" ]
 
 jobs:
-  build:
-
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
         fail-fast: false
         matrix:
-          os: [ubuntu-latest, macos-latest, windows-latest]
-          python-version: ["3.9", "3.10", "3.11", "3.13"]
+          os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+          python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -25,6 +25,8 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.23.2
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -36,6 +38,9 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+    - name: Build wheels
+      run: python -m cibuildwheel --output-dir wheelhouse
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+        path: ./wheelhouse/*.whl
