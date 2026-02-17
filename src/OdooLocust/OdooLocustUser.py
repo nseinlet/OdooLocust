@@ -32,6 +32,8 @@ import odoolib
 import time
 import sys
 
+from http import HTTPStatus
+
 from locust import HttpUser, events
 
 
@@ -42,7 +44,7 @@ def send(self, service_name, method, *args):
         call_name = '%s : %s' % (service_name, method)
     start_time = time.time()
     try:
-        res = odoolib.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
+        res = odoolib.tools.json_rpc(self.url, "call", {"service": service_name, "method": method, "args": args})
     except Exception as e:
         total_time = int((time.time() - start_time) * 1000)
         events.request.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=0, exception=e, context={})
@@ -52,10 +54,20 @@ def send(self, service_name, method, *args):
         events.request.fire(request_type="OdooRPC", name=call_name, response_time=total_time, response_length=sys.getsizeof(res), exception=None, context={})
         return res
 
+def json2_callback_fire(call_name, start_time, result):
+    total_time = int((time.time() - start_time) * 1000)
+    e = None
+    if result.status_code == HTTPStatus.UNAUTHORIZED:
+        e = Exception("Authentication failed. Please check your API key.")
+    if result.status_code == 422:
+        e = Exception(f"Invalid request: {result.text} for data")
+    if result.status_code != 200:
+        e = Exception(f"Unexpected status code {result.status_code}: {result.text}")
+    events.request.fire(request_type="OdooJSON2", name=call_name, response_time=total_time, response_length=0, exception=e, context={})
 
 odoolib.JsonRPCConnector.send = send
 odoolib.JsonRPCSConnector.send = send
-
+odoolib.json2.json2_callback_fire = json2_callback_fire
 
 class OdooLocustUser(HttpUser):
     abstract = True
@@ -63,8 +75,9 @@ class OdooLocustUser(HttpUser):
     database = "demo"
     login = "admin"
     password = "admin"
-    protocol = "jsonrpc"
+    protocol = "json2"
     user_id = -1
+    cookies = {}
 
     def on_start(self):
         user_id = None
@@ -77,4 +90,5 @@ class OdooLocustUser(HttpUser):
                                              password=self.password,
                                              protocol=self.protocol,
                                              user_id=user_id)
+        self.client.cookies = self.cookies
         self.client.check_login(force=False)
